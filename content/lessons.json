@@ -1,0 +1,7 @@
+[
+  {"id":"git-1","tier":"free","title":"Git mental model: snapshots, not diffs","body":"Commits are snapshots linked by parents. Branches are movable pointers. Practice: git init, commit twice, run git log --graph --oneline."},
+  {"id":"term-1","tier":"free","title":"Terminal relay: pipes and redirection","body":"Compose small tools: grep | sort | uniq -c. Redirect with > and >>, capture errors with 2>&1. Practice: count the most common words in a file."},
+  {"id":"git-2","tier":"pro","title":"Rebase vs merge: choosing a history shape","body":"Rebase rewrites for linear history; merge preserves context. Never rebase shared branches. Practice: resolve the same conflict both ways."},
+  {"id":"code-1","tier":"pro","title":"Learning loop: write, break, explain","body":"For each concept: write a minimal example, deliberately break it, explain the failure aloud, then teach it back in 3 sentences."},
+  {"id":"agent-1","tier":"pro","title":"Agentic relay: delegating with checkpoints","body":"Give agents small tasks, require evidence, and gate irreversible actions behind human approval."}
+]

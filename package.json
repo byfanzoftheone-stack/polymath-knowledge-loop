@@ -1,0 +1,14 @@
+{
+  "name": "polymath-knowledge-loop",
+  "version": "0.1.0",
+  "description": "Polymath curriculum with a free tier, license-key gated Pro lessons, waitlist, and governed checkout stub.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test test/*.test.js",
+    "approvals": "node src/cli.js"
+  }
+}
