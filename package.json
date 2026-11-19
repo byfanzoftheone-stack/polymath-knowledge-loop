@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node src/server.js",
     "test": "node --test test/*.test.js",
-    "approvals": "node src/cli.js"
+    "approvals": "node src/cli.js",
+    "deliveries": "node src/cli.js deliveries"
   }
 }

@@ -12,6 +12,7 @@ No spend, publishing, or outbound communication happens without explicit human a
 | No secrets in code | `src/config.js`, `.env.example`, `.gitignore` | All secrets come from env; `.env` is git-ignored; license keys stored only as HMAC hashes. |
 | Rate limits | `src/ratelimit.js` | Per-IP fixed window (`RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS`), returns 429, logged. |
 | Admin auth | `src/app.js` | Key issuance requires `ADMIN_TOKEN` (constant-time compare). |
+| Webhook keys | `src/webhook.js` | Signature verified over raw body; keys hashed at rest; plaintext sits in an outbox until a human delivers it (`node src/cli.js deliveries`, `delivered <hash> <approver>`). No email is sent and Stripe is never called by this path. |
 
 ## Known limits
 Rate limiter is in-memory and per-process; behind a proxy, client IP needs trusted-proxy handling. JSON storage is not concurrency-safe at scale. Approval queue is a gate for callers to use; no automated sender exists in this repo.

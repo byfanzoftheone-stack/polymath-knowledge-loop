@@ -6,7 +6,14 @@ export function loadConfig(env = process.env) {
     licenseSecret: env.LICENSE_HASH_SECRET || '',
     adminToken: env.ADMIN_TOKEN || '',
     stripeKey: env.STRIPE_SECRET_KEY || '',
-    stripePrice: env.STRIPE_PRICE_ID_PRO || '',
+    stripePrice: env.STRIPE_PRICE_PRO || env.STRIPE_PRICE_ID_PRO || '',
+    stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET || '',
+    // price id -> tier, from env only. Unknown prices issue nothing.
+    priceTiers: Object.fromEntries([
+      [env.STRIPE_PRICE_PRO || env.STRIPE_PRICE_ID_PRO, 'pro'],
+      [env.STRIPE_PRICE_TEAM, 'team'],
+    ].filter(([id]) => id)),
+    licenseDb: env.LICENSE_DB || '',
     livePaymentsApproved: env.LIVE_PAYMENTS_APPROVED === 'yes',
     baseUrl: env.PUBLIC_BASE_URL || 'http://localhost:3000',
     rateMax: Number(env.RATE_LIMIT_MAX || 60),

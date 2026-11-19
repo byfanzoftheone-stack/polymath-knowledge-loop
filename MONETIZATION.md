@@ -25,7 +25,7 @@ Polymath Knowledge Loop: a curriculum and learning loop (write, break, explain, 
 ## Launch checklist
 - [ ] Owner approves pricing and refund policy
 - [ ] Create Stripe product/price; set `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID_PRO` in the host's secret store (not git)
-- [ ] Add a Stripe webhook that issues a key after payment (not yet built)
+- [x] Stripe webhook issues a key after payment: `POST /api/stripe/webhook` (`src/webhook.js`, vendored `src/license-webhook.mjs`). Untested against live Stripe. Owner: set `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_PRO`; point a Stripe test-mode endpoint at the route; then `npm run deliveries` and `node src/cli.js delivered <hash> <you>` after sending each key by hand
 - [ ] Set `LICENSE_HASH_SECRET`, `ADMIN_TOKEN`; set `LIVE_PAYMENTS_APPROVED=yes` only after a test-mode purchase works
 - [ ] Add Terms, Privacy, and tax setup; add persistent storage (JSON files are for MVP only)
 - [ ] Choose host and deploy (owner action); put TLS in front

@@ -7,6 +7,7 @@ import { makeLimiter } from './ratelimit.js';
 import { makeStore } from './store.js';
 import { issueKey, verifyKey } from './licenses.js';
 import { createCheckout } from './checkout.js';
+import { makeLicenseWebhook } from './webhook.js';
 
 const lessons = JSON.parse(readFileSync(new URL('../content/lessons.json', import.meta.url), 'utf8'));
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
@@ -16,6 +17,15 @@ export function buildApp(cfg = loadConfig()) {
   const audit = makeAudit(cfg.dataDir);
   const store = makeStore(cfg.dataDir);
   const limit = makeLimiter(cfg.rateMax, cfg.rateWindowMs);
+  const lw = makeLicenseWebhook(cfg, audit);
+  const proLicensed = (key) => verifyKey(store, cfg.licenseSecret, key) || ['pro', 'team'].includes(lw.validate(key).tier);
+  // Raw bytes (NOT parsed): Stripe signs the exact body.
+  const readRaw = (req, max = 1_000_000) => new Promise((resolve, reject) => {
+    const chunks = []; let n = 0;
+    req.on('data', (c) => { n += c.length; if (n > max) { reject(new Error('too large')); req.destroy(); } else chunks.push(c); });
+    req.on('end', () => resolve(Buffer.concat(chunks)));
+    req.on('error', reject);
+  });
 
   const send = (res, code, body, type = 'application/json') => {
     res.writeHead(code, { 'Content-Type': type, 'X-Content-Type-Options': 'nosniff' });
@@ -51,7 +61,7 @@ export function buildApp(cfg = loadConfig()) {
       if (req.method === 'GET' && m) {
         const l = lessons.find((x) => x.id === m[1]);
         if (!l) return send(res, 404, { error: 'not found' });
-        if (l.tier === 'pro' && !verifyKey(store, cfg.licenseSecret, bearer(req))) {
+        if (l.tier === 'pro' && !proLicensed(bearer(req))) {
           audit('lesson.denied', { id: l.id, ip });
           return send(res, 402, { error: 'Pro license key required', upgrade: '/' });
         }
@@ -70,6 +80,12 @@ export function buildApp(cfg = loadConfig()) {
         const { email } = await readJson(req);
         return send(res, 200, await createCheckout(cfg, audit, typeof email === 'string' ? email.slice(0, 200) : ''));
       }
+      if (req.method === 'POST' && url.pathname === '/api/stripe/webhook') {
+        let raw;
+        try { raw = await readRaw(req); } catch { return send(res, 413, { error: 'too large' }); }
+        const out = lw.handle(raw, req.headers['stripe-signature']);
+        return send(res, out.status, out.body);
+      }
       if (req.method === 'POST' && url.pathname === '/api/admin/keys') {
         if (!cfg.adminToken || !safeEq(bearer(req), cfg.adminToken)) { audit('admin.denied', { ip }); return send(res, 401, { error: 'unauthorized' }); }
         const { label } = await readJson(req);
@@ -83,5 +99,5 @@ export function buildApp(cfg = loadConfig()) {
       send(res, 500, { error: 'internal error' });
     }
   });
-  return { server, store, audit };
+  return { server, store, audit, lw };
 }

@@ -10,6 +10,8 @@ export async function createCheckout(cfg, audit, email) {
     mode: 'subscription',
     'line_items[0][price]': cfg.stripePrice,
     'line_items[0][quantity]': '1',
+    // Lets the webhook map the paid session to a tier (server-side map only).
+    'metadata[price_id]': cfg.stripePrice,
     success_url: cfg.baseUrl + '/?paid=1',
     cancel_url: cfg.baseUrl + '/?canceled=1',
     ...(email ? { customer_email: email } : {}),
